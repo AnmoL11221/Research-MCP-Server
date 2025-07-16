@@ -1,7 +1,7 @@
 # AI-Driven Research Assistant MCP Server
 
 ## Overview
-This project is an AI-powered research assistant server that aggregates, summarizes, and synthesizes academic literature from arXiv, PubMed, and Semantic Scholar. It provides a unified API for searching, summarizing, synthesizing, and citing academic papers, making it easier for students, researchers, and educators to access and understand scientific knowledge.
+This project is an AI-powered research assistant platform that aggregates, summarizes, synthesizes, and answers questions about academic literature from arXiv, PubMed, and Semantic Scholar. It provides both a robust backend API (FastAPI) and a modern frontend (Streamlit) for searching, summarizing, synthesizing, Q&A, and citing academic papers.
 
 ## Features
 - Unified academic search across arXiv, PubMed, and Semantic Scholar
@@ -11,8 +11,11 @@ This project is an AI-powered research assistant server that aggregates, summari
 - Citation generation in APA style
 - Redis caching for efficient repeated queries
 - Professional logging and error handling
+- **Streamlit frontend**: User-friendly web app for search, citation, summarization, and Q&A
+- Configurable backend URL in the frontend
+- Backend warnings (e.g., rate limits) are suppressed in the UI for a cleaner experience
 
-## Setup Instructions
+## Quickstart
 
 ### 1. Clone the Repository
 ```bash
@@ -40,10 +43,25 @@ REDIS_URL=redis://localhost:6379                   # Or your Redis instance URL
 ### 4. Start Redis (if not already running)
 Make sure you have a Redis server running locally or update `REDIS_URL` in your `.env`.
 
-### 5. Run the Server
+### 5. Run the Backend API
 ```bash
 uvicorn main:app --reload
 ```
+
+### 6. Run the Streamlit Frontend
+```bash
+streamlit run app.py
+```
+- Open your browser to `http://localhost:8501`.
+- Enter your backend API URL (e.g., `http://localhost:8000` for local development).
+
+## Streamlit App Features
+- **Configurable Backend URL**: Easily switch between local and deployed backends.
+- **Search**: Enter a research query and view results from all sources.
+- **Cite**: Generate APA-style citations for any paper.
+- **Summarize**: Get concise summaries of paper abstracts.
+- **Q&A**: Ask natural language questions about the search results using RAG.
+- **Clean UI**: Backend warnings (e.g., rate limits) are not shown to users; only critical errors are displayed.
 
 ## API Endpoints
 
@@ -135,3 +153,42 @@ Generate an APA-style citation for a paper.
 
 ## License
 MIT License (or specify your license here) 
+
+## MCP (Model-Context Protocol) Tool Integration
+
+This project is now fully compliant with the Model-Context Protocol (MCP), making it directly usable as a tool by AI hosts like Claude Desktop and other MCP-compatible systems.
+
+### How to Use as an MCP Tool
+
+1. **Install dependencies** (if not already done):
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Start the MCP server**:
+   ```bash
+   python mcp_server.py
+   ```
+   - By default, this uses the `stdio` transport, which is required for Claude Desktop integration.
+   - The server exposes the following tools: `search`, `summarize`, `search_and_summarize`, `synthesize`, `cite`, and `qa`.
+
+3. **Connect to Claude Desktop or another MCP host**:
+   - In Claude Desktop, add a new MCP tool in your config (e.g., `claude_desktop_config.json`) pointing to your `mcp_server.py` script.
+   - Example config snippet:
+     ```json
+     {
+       "mcpServers": {
+         "research-assistant": {
+           "command": "/usr/bin/python3",
+           "args": ["/absolute/path/to/mcp_server.py"]
+         }
+       }
+     }
+     ```
+   - Restart Claude Desktop and enable the tool from the hammer icon in the chat UI.
+
+4. **Usage**:
+   - Claude (or any MCP host) will now be able to call your research tools directly, with full support for tool invocation, argument passing, and structured results.
+
+### Dual API and MCP Support
+- You can continue to use the FastAPI server (`main.py`) for HTTP API access and the Streamlit frontend (`app.py`).
+- The MCP server (`mcp_server.py`) is for direct tool integration with AI hosts. 
