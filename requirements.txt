@@ -9,3 +9,4 @@ feedparser
 httpx
 redis
 python-dotenv
+streamlit
