@@ -7,6 +7,7 @@ This project is an AI-powered research assistant server that aggregates, summari
 - Unified academic search across arXiv, PubMed, and Semantic Scholar
 - Summarization of academic texts using state-of-the-art models
 - Synthesis of multiple paper abstracts into a single summary
+- Q&A over a set of papers using Retrieval-Augmented Generation (RAG)
 - Citation generation in APA style
 - Redis caching for efficient repeated queries
 - Professional logging and error handling
@@ -88,6 +89,23 @@ Synthesize information from multiple papers into a single summary.
 - **Response:**
   ```json
   { "synthesis": "..." }
+  ```
+
+### `POST /qa`
+Q&A over a set of papers using Retrieval-Augmented Generation (RAG).
+- **Request Body:**
+  ```json
+  {
+    "papers": [
+      { "title": "Paper 1", "authors": ["Alice"], "abstract": "This study explores...", "source": "arXiv", "publication_date": "2023-01-01", "url": "..." },
+      { "title": "Paper 2", "authors": ["Bob"], "abstract": "The main limitation was...", "source": "PubMed", "publication_date": "2022-12-01", "url": "..." }
+    ],
+    "question": "What was the primary limitation mentioned in these studies?"
+  }
+  ```
+- **Response:**
+  ```json
+  { "answer": "The main limitation mentioned was..." }
   ```
 
 ### `POST /cite`

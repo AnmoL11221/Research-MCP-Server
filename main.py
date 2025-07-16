@@ -38,6 +38,10 @@ class Paper(BaseModel):
 class SynthesizeRequest(BaseModel):
     papers: list[Paper]
 
+class QARequest(BaseModel):
+    papers: list[Paper]
+    question: str
+
 @app.get("/")
 async def root():
     logging.info("Root endpoint called.")
@@ -175,4 +179,23 @@ async def cite_endpoint(paper: Paper):
     author_str = ", ".join([format_author(a) for a in authors])
     citation = f"{author_str} ({year}). {paper.title}. {paper.source}."
     # TODO: Use citeproc-py for more advanced citation formatting in the future.
-    return {"citation": citation} 
+    return {"citation": citation}
+
+@app.post("/qa")
+async def qa_endpoint(request: QARequest):
+    logging.info(f"/qa called with question: {request.question}")
+    try:
+        if not request.papers:
+            return {"answer": "No papers provided."}
+        context = "\n\n---\n\n".join([p.abstract for p in request.papers if p.abstract])
+        prompt = (
+            f"Answer the following question based only on the provided research abstracts. "
+            f"If the answer is not present, say so.\n"
+            f"Question: {request.question}\n"
+            f"Abstracts: {context}"
+        )
+        answer = summarize_text(prompt, max_length=200, min_length=50)
+        return {"answer": answer}
+    except Exception as e:
+        logging.error(f"/qa error: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) 
