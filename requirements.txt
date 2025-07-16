@@ -10,3 +10,4 @@ httpx
 redis
 python-dotenv
 streamlit
+mcp[cli]>=0.0.12

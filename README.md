@@ -153,3 +153,42 @@ Generate an APA-style citation for a paper.
 
 ## License
 MIT License (or specify your license here) 
+
+## MCP (Model-Context Protocol) Tool Integration
+
+This project is now fully compliant with the Model-Context Protocol (MCP), making it directly usable as a tool by AI hosts like Claude Desktop and other MCP-compatible systems.
+
+### How to Use as an MCP Tool
+
+1. **Install dependencies** (if not already done):
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Start the MCP server**:
+   ```bash
+   python mcp_server.py
+   ```
+   - By default, this uses the `stdio` transport, which is required for Claude Desktop integration.
+   - The server exposes the following tools: `search`, `summarize`, `search_and_summarize`, `synthesize`, `cite`, and `qa`.
+
+3. **Connect to Claude Desktop or another MCP host**:
+   - In Claude Desktop, add a new MCP tool in your config (e.g., `claude_desktop_config.json`) pointing to your `mcp_server.py` script.
+   - Example config snippet:
+     ```json
+     {
+       "mcpServers": {
+         "research-assistant": {
+           "command": "/usr/bin/python3",
+           "args": ["/absolute/path/to/mcp_server.py"]
+         }
+       }
+     }
+     ```
+   - Restart Claude Desktop and enable the tool from the hammer icon in the chat UI.
+
+4. **Usage**:
+   - Claude (or any MCP host) will now be able to call your research tools directly, with full support for tool invocation, argument passing, and structured results.
+
+### Dual API and MCP Support
+- You can continue to use the FastAPI server (`main.py`) for HTTP API access and the Streamlit frontend (`app.py`).
+- The MCP server (`mcp_server.py`) is for direct tool integration with AI hosts. 
