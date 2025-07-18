@@ -11,9 +11,6 @@ This project is an AI-powered research assistant platform that aggregates, summa
 - Citation generation in APA style
 - Redis caching for efficient repeated queries
 - Professional logging and error handling
-- **Streamlit frontend**: User-friendly web app for search, citation, summarization, and Q&A
-- Configurable backend URL in the frontend
-- Backend warnings (e.g., rate limits) are suppressed in the UI for a cleaner experience
 
 ## Quickstart
 
@@ -47,21 +44,6 @@ Make sure you have a Redis server running locally or update `REDIS_URL` in your 
 ```bash
 uvicorn main:app --reload
 ```
-
-### 6. Run the Streamlit Frontend
-```bash
-streamlit run app.py
-```
-- Open your browser to `http://localhost:8501`.
-- Enter your backend API URL (e.g., `http://localhost:8000` for local development).
-
-## Streamlit App Features
-- **Configurable Backend URL**: Easily switch between local and deployed backends.
-- **Search**: Enter a research query and view results from all sources.
-- **Cite**: Generate APA-style citations for any paper.
-- **Summarize**: Get concise summaries of paper abstracts.
-- **Q&A**: Ask natural language questions about the search results using RAG.
-- **Clean UI**: Backend warnings (e.g., rate limits) are not shown to users; only critical errors are displayed.
 
 ## API Endpoints
 
@@ -190,5 +172,58 @@ This project is now fully compliant with the Model-Context Protocol (MCP), makin
    - Claude (or any MCP host) will now be able to call your research tools directly, with full support for tool invocation, argument passing, and structured results.
 
 ### Dual API and MCP Support
-- You can continue to use the FastAPI server (`main.py`) for HTTP API access and the Streamlit frontend (`app.py`).
+- You can continue to use the FastAPI server (`main.py`) for HTTP API access.
 - The MCP server (`mcp_server.py`) is for direct tool integration with AI hosts. 
+
+## Docker Deployment
+
+You can deploy this project as a containerized MCP server using Docker.
+
+### 1. Create a Dockerfile
+Add a file named `Dockerfile` to your project root with the following content:
+
+```Dockerfile
+# Use an official Python base image
+FROM python:3.10-slim
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY . .
+
+# Install Python dependencies
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables (optional)
+# ENV SEMANTIC_SCHOLAR_API_KEY=your_actual_api_key_here
+# ENV REDIS_URL=redis://localhost:6379
+
+# Default command: run the MCP server
+CMD ["python", "mcp_server.py"]
+```
+
+### 2. Build the Docker Image
+```bash
+docker build -t research-mcp-server .
+```
+
+### 3. Run the Docker Container
+```bash
+docker run --rm -it research-mcp-server
+```
+- You can pass environment variables with `-e` if needed, e.g.:
+  ```bash
+  docker run --rm -it -e SEMANTIC_SCHOLAR_API_KEY=your_key research-mcp-server
+  ```
+
+### 4. Connect to Claude Desktop or MCP Host
+- Use the same config as before, but set the `command` to `docker` and use the appropriate arguments to run the container if you want Claude to launch it via Docker. (Or run the container manually and connect via HTTP/SSE if you adapt the transport.)
+
+---
+
+You now have a fully containerized, MCP-compliant research assistant ready for deployment and publishing! 
