@@ -1,11 +1,12 @@
+# Use an official Python base image
 FROM python:3.10-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
-
+# Copy project files
 COPY . .
 
+# Install Python dependencies (with pip cache and pre-built wheels)
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
