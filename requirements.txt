@@ -1,8 +1,9 @@
+torch==1.13.1+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+transformers==4.36.2
 fastapi
 uvicorn
 requests
-transformers
-torch
 python-multipart
 sentence-transformers
 feedparser
