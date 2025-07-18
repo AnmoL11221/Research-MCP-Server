@@ -1,19 +1,14 @@
-import sys
-sys.stdout = sys.stderr
-
 import asyncio
-from typing import Any
-from mcp.server.fastmcp import FastMCP
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
 from academic_search import search_arxiv, search_pubmed, search_semantic_scholar
 from summarizer import summarize_text
 from cache import get_from_cache, set_to_cache
-import logging
 
-mcp = FastMCP("research-assistant")
+app = Server("research-assistant")
 
-@mcp.tool()
+@app.tool()
 async def search(query: str, max_results: int = 5) -> dict:
-    """Search for academic papers across arXiv, PubMed, and Semantic Scholar."""
     cache_key = f"search:{query}:{max_results}"
     cached = get_from_cache(cache_key)
     if cached is not None:
@@ -43,18 +38,16 @@ async def search(query: str, max_results: int = 5) -> dict:
     set_to_cache(cache_key, response, 3600)
     return response
 
-@mcp.tool()
+@app.tool()
 async def summarize(text: str, max_length: int = 150) -> dict:
-    """Summarize a given text."""
     try:
         summary = summarize_text(text, max_length=max_length)
         return {"summary": summary}
     except Exception as e:
         return {"error": str(e)}
 
-@mcp.tool()
+@app.tool()
 async def search_and_summarize(query: str, max_results: int = 5, summary_max_length: int = 50, summary_min_length: int = 25) -> dict:
-    """Search and summarize abstracts from all sources."""
     results = []
     errors = []
     loop = asyncio.get_event_loop()
@@ -94,9 +87,8 @@ async def search_and_summarize(query: str, max_results: int = 5, summary_max_len
         })
     return {"results": summarized, "errors": errors}
 
-@mcp.tool()
+@app.tool()
 async def synthesize(papers: list[dict]) -> dict:
-    """Synthesize information from multiple papers into a single summary."""
     if not papers:
         return {"synthesis": "No papers provided."}
     combined_abstracts = "\n\n---\n\n".join([p.get("abstract", "") for p in papers if p.get("abstract")])
@@ -111,9 +103,8 @@ async def synthesize(papers: list[dict]) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-@mcp.tool()
+@app.tool()
 async def cite(paper: dict) -> dict:
-    """Generate an APA-style citation for a paper."""
     authors = paper.get("authors", [])
     year = ""
     if paper.get("publication_date"):
@@ -129,9 +120,8 @@ async def cite(paper: dict) -> dict:
     citation = f"{author_str} ({year}). {paper.get('title', '')}. {paper.get('source', '')}."
     return {"citation": citation}
 
-@mcp.tool()
+@app.tool()
 async def qa(papers: list[dict], question: str) -> dict:
-    """Q&A over a set of papers using Retrieval-Augmented Generation (RAG)."""
     if not papers:
         return {"answer": "No papers provided."}
     context = "\n\n---\n\n".join([p.get("abstract", "") for p in papers if p.get("abstract")])
@@ -147,5 +137,13 @@ async def qa(papers: list[dict], question: str) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
+async def main():
+    async with stdio_server() as streams:
+        await app.run(
+            streams[0],
+            streams[1],
+            app.create_initialization_options()
+        )
+
 if __name__ == "__main__":
-    mcp.run(transport="stdio") 
+    asyncio.run(main()) 
