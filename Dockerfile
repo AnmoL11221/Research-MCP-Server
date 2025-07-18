@@ -8,6 +8,7 @@ COPY . .
 
 # Install Python dependencies (with pip cache and pre-built wheels)
 RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt \
+    && python -c "from transformers import pipeline; pipeline('summarization', model='facebook/bart-large-cnn')"
 
 CMD ["python", "mcp_server.py"]
