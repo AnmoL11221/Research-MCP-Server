@@ -13,4 +13,5 @@ RUN pip install --upgrade pip \
 
 ENV TRANSFORMERS_OFFLINE=1
 
-CMD ["python", "mcp_server.py"]
+EXPOSE 8080
+CMD ["uvicorn", "mcp_server:app", "--host", "0.0.0.0", "--port", "8080"]
