@@ -1,3 +1,10 @@
+import sys
+import builtins
+import logging
+
+builtins.print = lambda *args, **kwargs: __builtins__.print(*args, file=sys.stderr, **kwargs)
+logging.basicConfig(stream=sys.stderr)
+
 import asyncio
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
