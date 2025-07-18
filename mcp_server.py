@@ -1,13 +1,6 @@
-import sys
-import builtins
-import logging
-
-builtins.print = lambda *args, **kwargs: __builtins__.print(*args, file=sys.stderr, **kwargs)
-logging.basicConfig(stream=sys.stderr)
-
 import asyncio
 from mcp.server import Server
-from mcp.server.stdio import stdio_server
+from mcp.server.http import http_server
 from academic_search import search_arxiv, search_pubmed, search_semantic_scholar
 from summarizer import summarize_text
 from cache import get_from_cache, set_to_cache
@@ -145,10 +138,10 @@ async def qa(papers: list[dict], question: str) -> dict:
         return {"error": str(e)}
 
 async def main():
-    async with stdio_server() as streams:
+    async with http_server(host="0.0.0.0", port=8080) as server:
         await app.run(
-            streams[0],
-            streams[1],
+            server,
+            None,
             app.create_initialization_options()
         )
 
