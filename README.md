@@ -1,5 +1,27 @@
 # AI-Driven Research Assistant MCP Server
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/anmol1123/research-mcp-server)](https://hub.docker.com/r/anmol1123/research-mcp-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+---
+
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Quickstart](#quickstart)
+- [API Endpoints](#api-endpoints)
+- [Environment Variables](#environment-variables)
+- [Logging](#logging)
+- [Contribution Guidelines](#contribution-guidelines)
+- [License](#license)
+- [MCP (Model-Context Protocol) Tool Integration](#mcp-model-context-protocol-tool-integration)
+- [Example MCP Tool Usage](#example-mcp-tool-usage)
+- [Docker Deployment](#docker-deployment)
+- [Troubleshooting](#troubleshooting)
+- [Links](#links)
+
+---
+
 ## Overview
 This project is an AI-powered research assistant platform that aggregates, summarizes, synthesizes, and answers questions about academic literature from arXiv, PubMed, and Semantic Scholar. It provides both a robust backend API (FastAPI) and a modern frontend (Streamlit) for searching, summarizing, synthesizing, Q&A, and citing academic papers.
 
@@ -227,3 +249,48 @@ docker run --rm -it research-mcp-server
 ---
 
 You now have a fully containerized, MCP-compliant research assistant ready for deployment and publishing! 
+
+## Example MCP Tool Usage
+
+**Request:**
+```json
+{
+  "query": "AI artificial intelligence evolving daily development progress",
+  "max_results": 8,
+  "summary_max_length": 80,
+  "summary_min_length": 40
+}
+```
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "source": "arXiv",
+      "title": "Positive AI: Key Challenges in Designing Artificial Intelligence for Wellbeing",
+      "summary": "Many people are increasingly worried about AI's impact on their lives. To ensure AI progresses beneficially, some researchers have proposed 'wellbeing' as a key objective to govern AI. This article addresses key challenges in designing AI for wellbeing."
+    },
+    // ... more results ...
+  ],
+  "errors": []
+}
+```
+
+---
+
+## Troubleshooting
+
+- **Model download is slow or stuck:** The first run may take several minutes as models are downloaded. Check Docker or terminal logs for progress.
+- **Out of memory or crash:** Use a machine with more RAM/CPU, or try a smaller model if available.
+- **No response in Claude Desktop:** Ensure the MCP server is running, Docker is running, and your config paths are correct. Check logs for Python errors.
+- **Docker image not found:** Make sure your image is public and the name matches what you pushed to Docker Hub.
+- **Claude Desktop can't find the tool:** Double-check your config and restart Claude Desktop after changes.
+
+---
+
+## Links
+- [Docker Hub: anmol1123/research-mcp-server](https://hub.docker.com/r/anmol1123/research-mcp-server)
+- [Smythery MCP Registry](https://smythery.ai/)
+- [Model Context Protocol (MCP) Docs](https://modelcontextprotocol.io/docs/)
+- [Claude Desktop](https://www.anthropic.com/claude) 
