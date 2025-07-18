@@ -1,3 +1,6 @@
+import sys
+sys.stdout = sys.stderr
+
 import asyncio
 from typing import Any
 from mcp.server.fastmcp import FastMCP
