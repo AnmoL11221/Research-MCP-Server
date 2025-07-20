@@ -38,7 +38,7 @@ This project is an AI-powered research assistant platform that aggregates, summa
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/AnmoL11221/Research-MCP-Server>
 cd research-mcp-server
 ```
 
