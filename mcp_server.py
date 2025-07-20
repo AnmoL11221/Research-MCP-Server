@@ -1,16 +1,14 @@
-from fastapi import FastAPI, Request
+import asyncio
+from fastmcp import FastMCP
+from fastmcp.server import FastMCP
 from academic_search import search_arxiv, search_pubmed, search_semantic_scholar
 from summarizer import summarize_text
 from cache import get_from_cache, set_to_cache
-import asyncio
 
-app = FastAPI()
+mcp = FastMCP("research-assistant")
 
-@app.post("/search")
-async def search_endpoint(request: Request):
-    data = await request.json()
-    query = data.get("query")
-    max_results = data.get("max_results", 5)
+@mcp.tool()
+async def search(query: str, max_results: int = 5) -> dict:
     cache_key = f"search:{query}:{max_results}"
     cached = get_from_cache(cache_key)
     if cached is not None:
@@ -40,24 +38,16 @@ async def search_endpoint(request: Request):
     set_to_cache(cache_key, response, 3600)
     return response
 
-@app.post("/summarize")
-async def summarize_endpoint(request: Request):
-    data = await request.json()
-    text = data.get("text", "")
-    max_length = data.get("max_length", 150)
+@mcp.tool()
+async def summarize(text: str, max_length: int = 150) -> dict:
     try:
         summary = summarize_text(text, max_length=max_length)
         return {"summary": summary}
     except Exception as e:
         return {"error": str(e)}
 
-@app.post("/search_and_summarize")
-async def search_and_summarize_endpoint(request: Request):
-    data = await request.json()
-    query = data.get("query")
-    max_results = data.get("max_results", 5)
-    summary_max_length = data.get("summary_max_length", 50)
-    summary_min_length = data.get("summary_min_length", 25)
+@mcp.tool()
+async def search_and_summarize(query: str, max_results: int = 5, summary_max_length: int = 50, summary_min_length: int = 25) -> dict:
     results = []
     errors = []
     loop = asyncio.get_event_loop()
@@ -97,10 +87,8 @@ async def search_and_summarize_endpoint(request: Request):
         })
     return {"results": summarized, "errors": errors}
 
-@app.post("/synthesize")
-async def synthesize_endpoint(request: Request):
-    data = await request.json()
-    papers = data.get("papers", [])
+@mcp.tool()
+async def synthesize(papers: list) -> dict:
     if not papers:
         return {"synthesis": "No papers provided."}
     combined_abstracts = "\n\n---\n\n".join([p.get("abstract", "") for p in papers if p.get("abstract")])
@@ -115,9 +103,8 @@ async def synthesize_endpoint(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
-@app.post("/cite")
-async def cite_endpoint(request: Request):
-    paper = await request.json()
+@mcp.tool()
+async def cite(paper: dict) -> dict:
     authors = paper.get("authors", [])
     year = ""
     if paper.get("publication_date"):
@@ -133,11 +120,8 @@ async def cite_endpoint(request: Request):
     citation = f"{author_str} ({year}). {paper.get('title', '')}. {paper.get('source', '')}."
     return {"citation": citation}
 
-@app.post("/qa")
-async def qa_endpoint(request: Request):
-    data = await request.json()
-    papers = data.get("papers", [])
-    question = data.get("question", "")
+@mcp.tool()
+async def qa(papers: list, question: str) -> dict:
     if not papers:
         return {"answer": "No papers provided."}
     context = "\n\n---\n\n".join([p.get("abstract", "") for p in papers if p.get("abstract")])
@@ -154,5 +138,4 @@ async def qa_endpoint(request: Request):
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080) 
+    mcp.run(transport="stdio")
