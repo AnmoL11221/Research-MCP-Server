@@ -1,0 +1,7 @@
+name: research-mcp-server
+description: AI-Driven Research Assistant MCP Server
+language: python
+entrypoint: python mcp_server.py
+transport: stdio
+dependencies:
+  - requirements.txt
