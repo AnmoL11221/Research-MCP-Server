@@ -1,0 +1,13 @@
+services:
+  - type: worker
+    name: research-mcp-server
+    env: docker
+    plan: free
+    autoDeploy: true
+    buildCommand: ""
+    startCommand: "python mcp_server.py"
+    envVars:
+      - key: SEMANTIC_SCHOLAR_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false 
