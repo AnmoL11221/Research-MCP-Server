@@ -10,3 +10,4 @@ httpx
 redis
 python-dotenv
 fastmcp
+numpy<2
