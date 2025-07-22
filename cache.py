@@ -23,7 +23,7 @@ def get_from_cache(key: str):
             pass
     return None
 
-def set_to_cache(key: str, value, ttl: int):
+def set_to_cache(key: str, value, ttl: int = 3600):
     if redis_available:
         try:
             redis_client.set(key, json.dumps(value), ex=ttl)

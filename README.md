@@ -1,95 +1,116 @@
-# AI-Driven Research Assistant MCP Server
+# Research Assistant API
 
-## Overview
-This project is an AI-powered research assistant platform that aggregates, summarizes, synthesizes, and answers questions about academic literature from arXiv, PubMed, and Semantic Scholar. It is implemented as a **true Model Context Protocol (MCP) server** using FastMCP, making it directly usable as a tool by AI hosts like Claude Desktop and deployable on MCP registries like Smythery.
+AI-powered research assistant that searches academic papers across arXiv, PubMed, and Semantic Scholar. Provides summarization, synthesis, and Q&A capabilities through both HTTP API and MCP integration for Claude Desktop.
 
 ## Features
-- Unified academic search across arXiv, PubMed, and Semantic Scholar
-- Summarization of academic texts using state-of-the-art models
-- Synthesis of multiple paper abstracts into a single summary
-- Q&A over a set of papers using Retrieval-Augmented Generation (RAG)
-- Citation generation in APA style
-- Redis caching for efficient repeated queries
-- Professional logging and error handling
 
-## Quickstart
+- Search across multiple academic databases
+- AI-powered text summarization
+- Multi-paper synthesis
+- Question answering over research papers
+- Citation generation
+- Redis caching
+- **Dual Mode**: HTTP API + MCP Server for Claude Desktop
 
-### 1. Clone the Repository
+## Quick Start
+
+### Local Setup
+
 ```bash
 git clone <your-repo-url>
 cd research-mcp-server
-```
-
-### 2. Install Dependencies
-It is recommended to use a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+python3.11 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Environment Variables
-Create a `.env` file in the project root:
-```
-SEMANTIC_SCHOLAR_API_KEY=your_actual_api_key_here  # Optional, for higher rate limits
-REDIS_URL=redis://localhost:6379                   # Or your Redis instance URL
-```
-- The server will work without a Semantic Scholar API key, but at a lower rate limit.
-- `.env` is loaded automatically using `python-dotenv`.
+### Environment Variables
 
-### 4. Start Redis (if not already running)
-Make sure you have a Redis server running locally or update `REDIS_URL` in your `.env`.
-
-### 5. Run the MCP Server (Local Testing)
 ```bash
+SEMANTIC_SCHOLAR_API_KEY=your_key_here  # Optional
+REDIS_URL=redis://localhost:6379       # Optional
+PORT=8080                              # For HTTP mode only
+```
+
+## Usage
+
+### As MCP Server (Claude Desktop Integration)
+
+1. **Update Claude Desktop Config** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "research-assistant": {
+      "command": "/Users/home/Desktop/research-mcp-server/.venv/bin/python3",
+      "args": ["/Users/home/Desktop/research-mcp-server/mcp_server.py"]
+    }
+  }
+}
+```
+
+2. **Start MCP Server**:
+```bash
+source .venv/bin/activate
 python mcp_server.py
 ```
-- This will start the MCP server using FastMCP and stdio transport.
-- **Do NOT use FastAPI/uvicorn for MCP tool integration.**
 
-## MCP Tool Integration with Claude Desktop
+3. **Restart Claude Desktop** and look for the research tools in your chat!
 
-1. **Edit your Claude Desktop config** (usually at `~/Library/Application Support/Claude/claude_desktop_config.json`):
-   ```json
-   {
-     "mcpServers": {
-       "research-assistant": {
-         "command": "/absolute/path/to/python3",
-         "args": ["/absolute/path/to/mcp_server.py"]
-       }
-     }
-   }
-   ```
-2. **Restart Claude Desktop** and enable the tool in the Developer > Local MCP servers panel.
-3. **Test the tool** in Claude Desktop.
+### As HTTP API Server
 
-## Deploying on Smythery or Other MCP Registries
+```bash
+source .venv/bin/activate
+PORT=8080 python mcp_server.py
+# OR
+uvicorn mcp_server:app --host 0.0.0.0 --port 8080
+```
 
-1. **Ensure your Dockerfile uses:**
-   ```dockerfile
-   CMD ["python", "mcp_server.py"]
-   ```
-   - Do NOT use `uvicorn` or expose a port for stdio MCP servers.
-2. **Add a `smithery.yaml` file:**
-   ```yaml
-   name: research-mcp-server
-   description: AI-Driven Research Assistant MCP Server
-   language: python
-   entrypoint: python mcp_server.py
-   transport: stdio
-   dependencies:
-     - requirements.txt
-   ```
-3. **Push your code and deploy on Smythery.**
+## API Endpoints
 
-## Troubleshooting
-- **Server disconnected / Could not attach:** Make sure you are running a true MCP server (not FastAPI/HTTP) and using FastMCP with stdio transport.
-- **Timeouts or handshake errors:** Ensure all logs/prints go to stderr, and only JSON-RPC is sent to stdout.
-- **Docker build errors:** Use a standard torch version (e.g., `torch==2.2.2`) and do not use `+cpu` unless you add the correct extra index URL.
-- **smithery.yaml missing:** Add the file as shown above for Smythery/cloud deployment.
+- `GET /` - Service info and available endpoints
+- `GET /health` - Health check
+- `POST /api/search` - Search academic papers
+- `POST /api/summarize` - Summarize text
+- `POST /api/search_and_summarize` - Search and summarize papers
+- `POST /api/synthesize` - Combine multiple papers
+- `POST /api/cite` - Generate citations
+- `POST /api/qa` - Answer questions based on papers
 
-## Not a REST API
-This project is **not a REST API** and is not intended to be used with HTTP clients or as a web server. It is a true MCP tool server for use with Claude Desktop and MCP registries.
+## MCP Tools (Available in Claude)
+
+- `search` - Search academic papers
+- `summarize` - Summarize text
+- `search_and_summarize` - Search and summarize papers
+- `synthesize` - Combine multiple papers
+- `cite` - Generate citations
+- `qa` - Answer questions based on papers
+
+## Usage Examples
+
+### HTTP API
+```bash
+curl -X POST http://localhost:8080/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "machine learning", "max_results": 5}'
+```
+
+### Claude Desktop
+Just ask Claude: *"Search for recent papers on machine learning and summarize them"*
+
+## Requirements
+
+- **Python 3.11+** (required for MCP functionality)
+- Virtual environment (recommended)
+- Redis (optional, for caching)
+
+## Docker Deployment
+
+```bash
+docker build -t research-assistant .
+docker run -p 8080:8080 -e PORT=8080 research-assistant
+```
 
 ## License
-MIT License 
+
+MIT License

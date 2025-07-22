@@ -9,5 +9,5 @@ feedparser
 httpx
 redis
 python-dotenv
-fastmcp
 numpy<2
+fastmcp
